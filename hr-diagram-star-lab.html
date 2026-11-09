@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>H-R Diagram Star Lab (TEKS 8.9A)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4FB; --surface:#FFFFFF; --ink:#1B2150; --muted:#4E5684; --line:#D3D8EC;
+  --accent:#3346C9; --accent-ink:#FFFFFF; --soft:#E7EAFA;
+  --good:#17784F; --good-bg:#E2F4EA; --bad:#A8302B; --bad-bg:#FBE6E4;
+  --sky:#141A44; --sky-text:#DCE1FF;
+  --sO:#7DA2FF; --sB:#A9C1FF; --sA:#EEF2FF; --sF:#FFF1B0; --sG:#FFE07A; --sK:#FFAE5C; --sM:#FF6B4A;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", Verdana, system-ui, sans-serif;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1230; --surface:#171D45; --ink:#E8EBFF; --muted:#A8AFDA; --line:#2C3470;
+    --accent:#93A5FF; --accent-ink:#0E1230; --soft:#20285A;
+    --good:#6BD9A3; --good-bg:#12392B; --bad:#FF928B; --bad-bg:#3D1A22;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1230; --surface:#171D45; --ink:#E8EBFF; --muted:#A8AFDA; --line:#2C3470;
+  --accent:#93A5FF; --accent-ink:#0E1230; --soft:#20285A;
+  --good:#6BD9A3; --good-bg:#12392B; --bad:#FF928B; --bad-bg:#3D1A22;
+  color-scheme: dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
+h1,h2,h3{font-family:var(--display);line-height:1.15;margin:0}
+h1{font-size:clamp(1.7rem,3.4vw,2.5rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.6rem;font-weight:800;margin-bottom:.4rem}
+h3{font-size:1.2rem;font-weight:600;margin:1.6rem 0 .5rem}
+p{margin:.4rem 0 .8rem}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* Header + spectrum nav (signature element) */
+header.top{padding:22px 0 0}
+.title-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.sub{color:var(--muted);margin:.3rem 0 0;max-width:62ch}
+.who{font-size:.95rem;color:var(--muted);text-align:right}
+.who strong{color:var(--ink)}
+.saved{display:inline-block;margin-left:8px;color:var(--good);opacity:0;transition:opacity .3s}
+.saved.on{opacity:1}
+nav.spectrum{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:18px 0 0}
+nav.spectrum button{position:relative;border:0;background:var(--surface);padding:14px 10px 10px;text-align:left;cursor:pointer;border-radius:4px;border-top:6px solid var(--c);min-height:64px}
+nav.spectrum button[aria-current="step"]{background:var(--soft);box-shadow:inset 0 0 0 2px var(--c)}
+nav.spectrum button:disabled{cursor:not-allowed;opacity:.55}
+nav.spectrum .n{display:block;font-family:var(--display);font-weight:800;font-size:1rem}
+nav.spectrum .p{display:block;font-size:.8rem;color:var(--muted)}
+.legend-temp{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-top:4px}
+
+main{padding:28px 0 60px}
+.intro{max-width:72ch}
+.lab{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:32px;align-items:start;margin-top:18px}
+@media (min-height:700px) and (min-width:921px){ .stick{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)} }
+@media (max-width:920px){ .lab{grid-template-columns:1fr} }
+
+.panel{background:var(--surface);border-radius:10px;padding:18px 20px;border:1px solid var(--line)}
+.sky{background:var(--sky);border-radius:12px;padding:8px}
+svg.hr{display:block;width:100%;height:auto;max-height:64vh;margin:0 auto;font-family:var(--body);touch-action:manipulation}
+svg.hr text{fill:var(--sky-text)}
+.readout{margin:.6rem 0 0;font-size:.95rem;color:var(--muted);min-height:1.6em}
+
+table.data{border-collapse:collapse;width:100%;font-size:.95rem;margin:.5rem 0 1rem}
+table.data th,table.data td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left}
+table.data th{font-family:var(--display);font-weight:600}
+table.data td.num{text-align:right;font-variant-numeric:tabular-nums}
+.swatch{display:inline-block;width:.85em;height:.85em;border-radius:50%;vertical-align:-.08em;margin-right:6px;border:1px solid rgba(0,0,0,.25)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:.5rem 0}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:.95rem}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--soft);font-weight:700}
+.chip.placed::after{content:" ✓";color:var(--good)}
+.chip.wrong{border-color:var(--bad)}
+.chip.wd{border-style:dashed}
+.chip:disabled{cursor:default;opacity:.7}
+.placer{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:.4rem 0 .2rem;font-size:.9rem}
+.placer label{display:flex;flex-direction:column;gap:2px;color:var(--muted)}
+select,input[type=text],textarea{background:var(--surface);border:1.5px solid var(--line);border-radius:6px;padding:7px 9px}
+textarea{width:100%;min-height:110px;resize:vertical;line-height:1.5}
+
+.btn{border:0;border-radius:8px;padding:9px 16px;background:var(--accent);color:var(--accent-ink);font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.q{padding:18px 0;border-top:1px solid var(--line)}
+.q:first-child{border-top:0}
+.q-prompt{font-weight:700;margin:0 0 .6rem;display:flex;gap:10px}
+.q-num{flex:none;font-family:var(--display);font-weight:800;color:var(--muted);min-width:1.6em}
+.opts{display:grid;gap:6px;margin:0 0 .7rem 2.3em}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;border-radius:6px;border:1.5px solid var(--line);cursor:pointer;background:var(--surface)}
+.opt:has(input:checked){border-color:var(--accent);background:var(--soft)}
+.opt input{margin-top:.3em;accent-color:var(--accent)}
+.q-body{margin-left:2.3em}
+.sortrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.sortrow .nm{min-width:9.5em;font-weight:700}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:6px;overflow:hidden}
+.seg label{padding:4px 10px;cursor:pointer;font-size:.9rem;border-left:1px solid var(--line)}
+.seg label:first-child{border-left:0}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--accent);color:var(--accent-ink);font-weight:700}
+.seg label:has(input:focus-visible){outline:3px solid var(--accent);outline-offset:-3px}
+ol.order{list-style:none;padding:0;margin:0 0 .7rem;display:grid;gap:6px;counter-reset:o}
+ol.order li{display:flex;align-items:center;gap:10px;padding:6px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);counter-increment:o}
+ol.order li::before{content:counter(o);font-family:var(--display);font-weight:800;color:var(--muted);width:1.2em}
+ol.order li .t{flex:1}
+ol.order button{border:1.5px solid var(--line);background:var(--surface);border-radius:6px;width:34px;height:30px;cursor:pointer}
+.q-actions{margin-left:2.3em;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.tries{font-size:.85rem;color:var(--muted)}
+.fb{margin:.6rem 0 0 2.3em;padding:0;border-radius:6px}
+.fb:not(:empty){padding:9px 12px}
+.fb.good{background:var(--good-bg);color:var(--good)}
+.fb.bad{background:var(--bad-bg);color:var(--bad)}
+.fb.note{background:var(--soft);color:var(--ink)}
+.q.done .opt,.q.done .seg label{cursor:default}
+
+.stage-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:.6rem 0}
+.stage-tabs button{border:1.5px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.88rem}
+.stage-tabs button[aria-current="true"]{border-color:var(--accent);background:var(--soft);font-weight:700}
+.stage-card{margin-top:.6rem}
+.stage-card .time{color:var(--muted);font-size:.92rem;margin:.1rem 0 .4rem}
+.path-toggle{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.path-toggle button{border:0;background:var(--surface);padding:8px 14px;cursor:pointer}
+.path-toggle button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+
+.start{max-width:640px}
+.start .panel{margin-top:18px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.goals{padding-left:1.2em}
+.goals li{margin:.2rem 0}
+.score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1rem 0}
+.score{padding:14px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--c)}
+.score .big{font-family:var(--display);font-weight:800;font-size:2rem}
+.written{white-space:pre-wrap;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+
+@keyframes burst{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+.burst{transform-box:fill-box;transform-origin:center;animation:burst .7s ease-out}
+@media (prefers-reduced-motion: reduce){ .burst{animation:none} .saved{transition:none} }
+
+@media print{
+  nav.spectrum,.no-print,.saved{display:none!important}
+  body{background:#fff;color:#000;font-size:12pt}
+  .score,.written,.panel{border-color:#999}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="title-row">
+      <div>
+        <h1>H-R Diagram Star Lab</h1>
+        <p class="sub">Ms. Sikes’ 8th Grade Science. TEKS 8.9A: describe the life cycle of stars, and compare and classify stars using the Hertzsprung-Russell diagram.</p>
+      </div>
+      <div class="who" id="who"></div>
+    </div>
+    <nav class="spectrum" id="nav" aria-label="Lab stations, ordered from hottest to coolest star color">
+      <button data-go="start" style="--c:var(--sO)"><span class="n">Start</span><span class="p">Sign in</span></button>
+      <button data-go="s1" style="--c:var(--sB)"><span class="n">1. Build it</span><span class="p" data-prog="s1"></span></button>
+      <button data-go="s2" style="--c:var(--sG)"><span class="n">2. Read it</span><span class="p" data-prog="s2"></span></button>
+      <button data-go="s3" style="--c:var(--sK)"><span class="n">3. Life cycle</span><span class="p" data-prog="s3"></span></button>
+      <button data-go="results" style="--c:var(--sM)"><span class="n">Results</span><span class="p">Print or turn in</span></button>
+    </nav>
+    <div class="legend-temp" aria-hidden="true"><span>Hotter stars</span><span>Cooler stars</span></div>
+  </header>
+  <main id="main"></main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+/* ---------- Data ---------- */
+const COLS=["Blue","Blue-white","White","Yellow-white","Orange","Red"];
+const COLHEX=["#7DA2FF","#A9C1FF","#EEF2FF","#FFF1B0","#FFAE5C","#FF6B4A"];
+const GROUPS=["Main sequence","Giant","Supergiant"];
+const STARS1=[
+ {id:"sun",name:"Sun",col:3,mag:5,grp:0},
+ {id:"sirius",name:"Sirius",col:1,mag:1,grp:0},
+ {id:"epseri",name:"Epsilon Eridani",col:4,mag:6,grp:0},
+ {id:"rigel",name:"Rigel",col:0,mag:-7,grp:2},
+ {id:"betel",name:"Betelgeuse",col:5,mag:-6,grp:2},
+ {id:"barnard",name:"Barnard’s Star",col:5,mag:13,grp:0},
+ {id:"capella",name:"Capella",col:3,mag:-1,grp:1},
+ {id:"deneb",name:"Deneb",col:1,mag:-7,grp:2},
+ {id:"spica",name:"Spica",col:0,mag:-3,grp:0},
+ {id:"aldeb",name:"Aldebaran",col:4,mag:-1,grp:1}
+];
+/* Station 2 stars: approximate surface temperature (°C) and absolute magnitude. lp = label position */
+const STARS2=[
+ ["Rigel",11000,-7,"a"],["Deneb",8500,-7.5,"a"],["Spica",22000,-3.5,"l"],["Regulus",12500,-0.6,"l"],
+ ["Vega",9300,0.6,"a"],["Sirius",9600,1.4,"b"],["Altair",7500,2.2,"r"],["Procyon",6300,2.7,"r"],
+ ["Sun",5500,4.8,"al"],["Tau Ceti",5300,5.7,"bl"],["Epsilon Eridani",4800,6.2,"r"],["Barnard’s Star",2900,13.2,"l"],
+ ["Polaris",5800,-3.6,"a"],["Canopus",7000,-5.5,"a"],["Capella",5200,-0.5,"l"],["Aldebaran",3800,-0.6,"a"],
+ ["Arcturus",4200,-0.3,"bl"],["Pollux",4500,1.1,"b"],["Antares",3300,-5.3,"bl"],["Betelgeuse",3200,-5.9,"a"],
+ ["Mira",2700,-1,"bl"],["Sirius B",24000,11.4,"r"],["Procyon B",7500,13,"r"],["Van Maanen’s Star",6000,14.2,"r"]
+];
+
+/* ---------- Questions ---------- */
+const QS={};
+function defQ(arr,station){arr.forEach(q=>{q.station=station;QS[q.id]=q;});return arr;}
+
+const S1Q=defQ([
+ {id:"s1axis",type:"mc",prompt:"Label the y-axis. The top of the axis (magnitude −10) is the…",options:["Most luminous end","Least luminous end"],answer:0,
+  hint:"Re-read the introduction: the larger the absolute magnitude, the smaller the luminosity. Negative numbers are the brightest.",
+  explain:"Negative magnitudes are the brightest stars, so the top is the most luminous end and the bottom (+15) is the least luminous."},
+ {id:"s1sort",type:"sort",prompt:"Classify each star on your diagram as a main sequence star, a giant, or a supergiant.",items:STARS1.map(s=>s.name),cats:GROUPS,answer:STARS1.map(s=>s.grp),
+  hint:"Main sequence stars fall along the diagonal band from upper left (hot and bright) to lower right (cool and dim). Giants sit above that band. Supergiants are at the very top (about −5 or brighter).",
+  explain:"Main sequence: Sun, Sirius, Epsilon Eridani, Barnard’s Star, Spica. Giants: Capella, Aldebaran. Supergiants: Rigel, Deneb, Betelgeuse."},
+ {id:"s1order",type:"order",prompt:"Put the star colors in order from hottest (1) to coolest (6).",items:COLS,
+  hint:"Think of a stove burner or a welding torch: a red glow is the coolest, and blue is the hottest.",
+  explain:"Blue stars are the hottest and red stars are the coolest, which is why the color axis also works as a temperature axis."},
+ {id:"s1text",type:"text",prompt:"In your own words, what is the relationship between a star’s color and its temperature? Include an example from your diagram.",min:40},
+ {id:"s1super",type:"mc",prompt:"Which of these stars is most likely to become a supernova?",options:["Betelgeuse","Sun","Spica","Capella"],answer:0,
+  hint:"Supernovas happen to very massive stars at the end of their lives. Which one is a red supergiant?",
+  explain:"Betelgeuse is a massive red supergiant near the end of its life, so it is expected to explode as a supernova."},
+ {id:"s1sun",type:"multi",prompt:"Read your diagram. Select every characteristic that describes the Sun.",
+  options:["Yellow to yellow-white color","Main sequence star","Absolute magnitude about +5","Surface temperature about 5,500°C","Red supergiant","Absolute magnitude about −7","One of the hottest stars","White dwarf"],answer:[0,1,2,3],
+  hint:"Find the Sun on your diagram. Check its color column, its magnitude number, and which band it sits in.",
+  explain:"The Sun is a medium-sized, yellow main sequence star with an absolute magnitude of about +5 and a surface temperature of about 5,500°C."}
+],"s1");
+
+const S2A=defQ([
+ {id:"s2q1",type:"mc",prompt:"What type of star is the Sun?",options:["Main sequence","Red giant","White dwarf","Supergiant"],answer:0,hint:"Find the Sun. Which labeled region is it inside?",explain:"The Sun sits right in the middle of the main sequence band."},
+ {id:"s2q2",type:"multi",prompt:"Select two red supergiants.",options:["Betelgeuse","Rigel","Antares","Aldebaran","Barnard’s Star"],answer:[0,2],hint:"Red means the far right side of the diagram. Supergiant means the very top.",explain:"Betelgeuse and Antares are red (cool) and at the top of the diagram (extremely bright)."},
+ {id:"s2q3",type:"mc",prompt:"Sirius B is what type of star?",options:["Main sequence","White dwarf","Giant","Supergiant"],answer:1,hint:"Sirius B is near the bottom left. Which region is that?",explain:"Sirius B is hot but very dim, so it sits in the white dwarf region."},
+ {id:"s2q4",type:"mc",prompt:"What is the approximate surface temperature of Procyon B?",options:["About 3,000°C","About 5,000°C","About 7,500°C","About 20,000°C"],answer:2,hint:"Find Procyon B, then follow a straight line down to the temperature axis. Use the pointer to help.",explain:"Procyon B lines up with about 7,500°C on the temperature axis."},
+ {id:"s2q5",type:"mc",prompt:"What color is Deneb?",options:["Red","Orange","Yellow","White to blue-white"],answer:3,hint:"Look at Deneb’s temperature, then at the spectral class strip above it.",explain:"Deneb is about 8,500°C, a hot class A star that looks white to blue-white."},
+ {id:"s2q6",type:"mc",prompt:"Which star is brighter (more luminous), Sirius or Vega?",options:["Sirius","Vega","They are exactly the same"],answer:1,hint:"Higher on the diagram means more luminous. Which dot is higher?",explain:"Vega is a little higher on the diagram (magnitude about +0.6 vs. +1.4), so it is more luminous."},
+ {id:"s2q7",type:"mc",prompt:"Name the red supergiant that is about 3,000°C.",options:["Betelgeuse","Sirius","Rigel","Procyon"],answer:0,hint:"Go to about 3,000°C on the temperature axis and look straight up to the top.",explain:"Betelgeuse is a red supergiant with a surface temperature of a little over 3,000°C."},
+ {id:"s2q8",type:"mc",prompt:"Which star is cooler, Sirius B or Barnard’s Star?",options:["Sirius B","Barnard’s Star"],answer:1,hint:"Cooler stars are farther to the right.",explain:"Barnard’s Star is about 2,900°C (far right), while Sirius B is over 20,000°C."},
+ {id:"s2q9",type:"mc",prompt:"What is the approximate surface temperature of the Sun?",options:["About 3,000°C","About 5,500°C","About 10,000°C","About 50,000°C"],answer:1,hint:"Find the Sun and follow a line straight down to the temperature axis.",explain:"The Sun’s surface is about 5,500°C."},
+ {id:"s2q10",type:"mc",prompt:"How is Mira classified?",options:["White dwarf","Main sequence","Giant","Supergiant"],answer:2,hint:"Mira is on the right side, a little above the main sequence. Which region is it in?",explain:"Mira is a red giant: cool, but much brighter than main sequence stars of the same temperature."}
+],"s2");
+const S2B=defQ([
+ {id:"s2q11",type:"multi",prompt:"Stars are classified on the H-R diagram by two characteristics. What are they?",options:["Surface temperature (color)","Luminosity (absolute magnitude)","Distance from Earth","Age","Number of planets"],answer:[0,1],hint:"Look at the two axes of the diagram.",explain:"The x-axis is surface temperature (or color/spectral class) and the y-axis is luminosity (or absolute magnitude)."},
+ {id:"s2q12",type:"mc",prompt:"The color of a star depends on its…",options:["Surface temperature","Distance from Earth","Number of planets","Constellation"],answer:0,hint:"What does the bottom axis measure?",explain:"A star’s color depends on its surface temperature."},
+ {id:"s2q13",type:"mc",prompt:"Scientists usually measure the temperature on H-R diagrams in what unit? (Our lab diagram uses °C so you can compare with everyday temperatures.)",options:["Kelvin (K)","Fahrenheit (°F)","Light-years","Magnitude"],answer:0,hint:"It is the SI unit for temperature that starts at absolute zero.",explain:"Kelvin. A kelvin is the same size as a Celsius degree, so star temperatures in K are only about 273 higher than in °C."},
+ {id:"s2q14",type:"mc",prompt:"The coolest stars will be what color?",options:["Blue","White","Yellow","Red"],answer:3,hint:"Look at the far right of the diagram.",explain:"The coolest stars glow red."},
+ {id:"s2q15",type:"mc",prompt:"How bright an object appears from Earth is its ____ magnitude.",options:["Apparent","Absolute","Spectral","Main"],answer:0,hint:"“Absolute” is a star’s true brightness. What is the word for how bright it seems from here?",explain:"Apparent magnitude is how bright a star looks from Earth. Absolute magnitude is its true brightness."},
+ {id:"s2q16",type:"mc",prompt:"The letters O, B, A, F, G, K, M represent a star’s…",options:["Spectral class","Age group","Size","Distance"],answer:0,hint:"Look at the lettered strip along the top of the diagram.",explain:"O, B, A, F, G, K, M are spectral classes, ordered from hottest (O) to coolest (M)."},
+ {id:"s2q17",type:"mc",prompt:"About 90% of stars fall into which group?",options:["Main sequence","Giants","Supergiants","White dwarfs"],answer:0,hint:"Which band is the biggest on the diagram?",explain:"About 90% of stars are main sequence stars."},
+ {id:"s2q18",type:"mc",prompt:"What spectral classes are white dwarfs?",options:["Mostly B, A, and F (hot, white)","Only K and M (cool, red)","Only G, like the Sun","Only O"],answer:0,hint:"Find the white dwarf region, then look straight up at the spectral class strip.",explain:"White dwarfs are mostly classes B, A, and F: hot and white, but very dim."},
+ {id:"s2q19",type:"mc",prompt:"Which group of stars has high temperatures and high luminosity?",options:["Blue supergiants (upper left)","Red giants (upper right)","White dwarfs (lower left)","Red dwarfs (lower right)"],answer:0,hint:"High temperature = left. High luminosity = top.",explain:"Hot and bright stars are in the upper left, like the blue supergiant Rigel."},
+ {id:"s2q20",type:"mc",prompt:"Which group of stars has low temperatures and high luminosity?",options:["Blue supergiants (upper left)","Red giants and supergiants (upper right)","White dwarfs (lower left)","Red dwarfs (lower right)"],answer:1,hint:"Low temperature = right. High luminosity = top.",explain:"Cool but bright stars are red giants and supergiants in the upper right. They are bright because they are huge."}
+],"s2");
+
+const S3Q=defQ([
+ {id:"s3sun",type:"order",prompt:"Put the life cycle of a Sun-like star in order.",items:["Nebula","Protostar","Main sequence star","Red giant","Planetary nebula","White dwarf"],
+  hint:"Every star begins in a cloud of gas and dust. Use the explorer to step through the stages.",explain:"Nebula → protostar → main sequence → red giant → planetary nebula → white dwarf."},
+ {id:"s3big",type:"order",prompt:"Put the life cycle of a massive star (more than about 8 times the Sun’s mass) in order.",items:["Nebula","Protostar","Main sequence star","Red supergiant","Supernova","Neutron star or black hole"],
+  hint:"Switch the explorer to “Massive star” and step through it.",explain:"Nebula → protostar → main sequence → red supergiant → supernova → neutron star or black hole."},
+ {id:"s3q1",type:"mc",prompt:"What mostly decides how a star lives and how it dies?",options:["Its mass","Its distance from Earth","How many planets it has","Which constellation it is in"],answer:0,hint:"Compare the two paths in the explorer. What is different about the stars at the start?",explain:"A star’s mass decides its temperature, brightness, how long it lives, and how it ends."},
+ {id:"s3q2",type:"mc",prompt:"Stars spend most of their lives (about 90%) at which stage?",options:["Main sequence","Red giant","Protostar","White dwarf"],answer:0,hint:"Check the time for each stage in the explorer.",explain:"Stars spend about 90% of their lives on the main sequence, fusing hydrogen into helium. That is why most stars we see are main sequence stars."},
+ {id:"s3q3",type:"mc",prompt:"When the Sun becomes a red giant, which way will it move on the H-R diagram?",options:["Toward the upper right (cooler and brighter)","Toward the lower left (hotter and dimmer)","Straight down","It will not move"],answer:0,hint:"Watch the dot move when you go from “Main sequence star” to “Red giant.”",explain:"As a red giant, the Sun will be cooler (more red) but much bigger and brighter, so it moves up and to the right."},
+ {id:"s3q4",type:"mc",prompt:"How will the Sun end its life?",options:["As a white dwarf","As a black hole","As a neutron star","In a supernova"],answer:0,hint:"The Sun is not massive enough to explode.",explain:"The Sun will shed its outer layers as a planetary nebula and leave behind a white dwarf."}
+],"s3");
+const MYSTERY=[
+ {k:"X",T:3200,m:-7},{k:"Y",T:15000,m:12},{k:"Z",T:5000,m:6},{k:"W",T:4200,m:0}
+];
+const S3M=defQ([
+ {id:"s3x",type:"mc",prompt:"Star X: 3,200°C, absolute magnitude −7. What type of star is it?",options:GROUPS.concat("White dwarf"),answer:2,hint:"Cool and extremely bright: top right corner.",explain:"Star X is a red supergiant."},
+ {id:"s3y",type:"mc",prompt:"Star Y: 15,000°C, absolute magnitude +12. What type of star is it?",options:GROUPS.concat("White dwarf"),answer:3,hint:"Hot but very dim: lower left.",explain:"Star Y is a white dwarf: hot, but so small that it is very dim."},
+ {id:"s3z",type:"mc",prompt:"Star Z: 5,000°C, absolute magnitude +6. What type of star is it?",options:GROUPS.concat("White dwarf"),answer:0,hint:"Is it on the diagonal band?",explain:"Star Z is an orange main sequence star, a little cooler and dimmer than the Sun."},
+ {id:"s3w",type:"mc",prompt:"Star W: 4,200°C, absolute magnitude 0. What type of star is it?",options:GROUPS.concat("White dwarf"),answer:1,hint:"It is cool, and above the main sequence but not at the very top.",explain:"Star W is a giant: cool and orange, but about 100 times brighter than the Sun."},
+ {id:"s3fate",type:"mc",prompt:"Star X is at the end of its life. What will most likely happen to it next?",options:["It becomes a white dwarf quietly","It explodes as a supernova, leaving a neutron star or black hole","It becomes a protostar","It returns to the main sequence"],answer:1,hint:"Star X is a supergiant. Which path in the explorer has a supergiant?",explain:"Supergiants are massive stars, so Star X will explode as a supernova and leave a neutron star or black hole."},
+ {id:"s3cer",type:"text",prompt:"Compare the Sun and Betelgeuse. How are they alike and different on the H-R diagram (color, temperature, brightness), and how will their life cycles end differently?",min:80}
+],"s3");
+
+const STATIONS={
+ s1:{label:"Station 1: Build it",graded:["s1plot","s1wd","s1axis","s1sort","s1order","s1super","s1sun"],text:["s1text"],c:"var(--sB)"},
+ s2:{label:"Station 2: Read it",graded:S2A.concat(S2B).map(q=>q.id),text:[],c:"var(--sG)"},
+ s3:{label:"Station 3: Life cycle",graded:["s3sun","s3big","s3q1","s3q2","s3q3","s3q4","s3x","s3y","s3z","s3w","s3fate"],text:["s3cer"],c:"var(--sK)"}
+};
+
+/* ---------- Life cycle paths ---------- */
+const PATHS={
+ sun:{label:"Sun-like star",stages:[
+  {name:"Nebula",pos:null,time:"Millions of years",text:"A huge, cold cloud of gas (mostly hydrogen) and dust. Gravity pulls part of the cloud together into a dense clump. A nebula is not on the H-R diagram because it is not a star yet."},
+  {name:"Protostar",pos:[3500,2],time:"Up to about 50 million years",text:"The clump shrinks and heats up. It glows, but nuclear fusion has not started yet. When the core gets hot enough, fusion turns on and a star is born."},
+  {name:"Main sequence star",pos:[5500,4.8],time:"About 10 billion years",text:"Hydrogen fuses into helium in the core. The star is stable and spends about 90% of its life here. Our Sun is in this stage now, about halfway through."},
+  {name:"Red giant",pos:[3800,-1],time:"About 1 billion years",text:"The core runs low on hydrogen. The outer layers swell up and cool, so the star becomes much bigger, brighter, and redder. It moves to the upper right of the H-R diagram."},
+  {name:"Planetary nebula",pos:[40000,1],time:"Tens of thousands of years",text:"The outer layers drift away into space as a glowing shell of gas. The very hot core is left behind and crosses to the left side of the diagram."},
+  {name:"White dwarf",pos:[15000,11.5],time:"Billions of years, slowly cooling",text:"The leftover core is hot but only about the size of Earth, so it is very dim. It sits in the lower left of the H-R diagram and slowly cools."}
+ ]},
+ massive:{label:"Massive star",stages:[
+  {name:"Nebula",pos:null,time:"Millions of years",text:"Massive stars also begin in a nebula. A very large clump of gas and dust collapses under gravity."},
+  {name:"Protostar",pos:[6000,-2],time:"Less than 1 million years",text:"A massive protostar heats up much faster than a Sun-like one."},
+  {name:"Main sequence star",pos:[25000,-4.5],time:"A few million to tens of millions of years",text:"Massive main sequence stars are hotter, bluer, and much brighter than the Sun. They burn through their fuel so fast that they live a much shorter life."},
+  {name:"Red supergiant",pos:[3300,-7],time:"Hundreds of thousands of years",text:"The star swells into an enormous, cool, extremely bright supergiant at the top right of the diagram. Betelgeuse and Antares are red supergiants."},
+  {name:"Supernova",pos:[3300,-7],burst:true,time:"Seconds to a few months",text:"The core collapses and the star explodes. For a few weeks it can outshine a whole galaxy. The explosion scatters new elements into space that can become part of new nebulas."},
+  {name:"Neutron star or black hole",pos:null,time:"Indefinitely",text:"If the leftover core is a few times the Sun’s mass, it becomes a super-dense neutron star. If it is even more massive, it collapses into a black hole. Neither is plotted on the H-R diagram."}
+ ]}
+};
+
+/* ---------- State ---------- */
+const LS="hrlab-v1:";
+let state=null, view="start", selStar=null;
+function blank(name,period){return{name,period,q:{},plot:{},wd:null,lc:{path:"sun",stage:0}};}
+function key(n,p){return LS+n.trim().toLowerCase().replace(/\s+/g," ")+"|"+p;}
+function store(k,v){try{localStorage.setItem(k,v);return true;}catch(e){return false;}}
+function fetchKey(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function save(){
+  if(!state)return;
+  state.updated=Date.now();
+  store(key(state.name,state.period),JSON.stringify(state));
+  store(LS+"last",key(state.name,state.period));
+  const s=document.getElementById("saved"); if(s){s.classList.add("on");clearTimeout(save.t);save.t=setTimeout(()=>s.classList.remove("on"),1200);}
+  updateNav();
+}
+function loadKey(k){const s=fetchKey(k);if(!s)return null;try{return JSON.parse(s);}catch(e){return null;}}
+function qs(id){return state.q[id]||(state.q[id]={tries:0,correct:false});}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtM=m=>{const r=Math.round(m*10)/10;return r>0?"+"+r:r<0?"−"+Math.abs(r):"0";};
+const fmtT=T=>(T>=10000?Math.round(T/1000)*1000:Math.round(T/100)*100).toLocaleString("en-US");
+
+/* ---------- Progress ---------- */
+function stationProgress(st){
+  const S=STATIONS[st];if(!state)return{done:0,total:S.graded.length+S.text.length,correct:0,first:0,graded:S.graded.length};
+  let correct=0,first=0,txt=0;
+  S.graded.forEach(id=>{const s=state.q[id];if(s&&s.correct){correct++;if(s.tries===1)first++;}});
+  S.text.forEach(id=>{const s=state.q[id];if(s&&s.done)txt++;});
+  return{done:correct+txt,total:S.graded.length+S.text.length,correct,first,graded:S.graded.length};
+}
+function updateNav(){
+  document.querySelectorAll("#nav button").forEach(b=>{
+    const g=b.dataset.go;
+    if(g===view)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");
+    b.disabled=!state&&g!=="start";
+  });
+  document.querySelectorAll("[data-prog]").forEach(p=>{const pr=stationProgress(p.dataset.prog);p.textContent=state?pr.done+" of "+pr.total+" done":"";});
+  const who=document.getElementById("who");
+  who.innerHTML=state?`Scientist: <strong>${esc(state.name)}</strong>, period ${esc(state.period)}<span class="saved" id="saved">Saved</span>`:"";
+}
+function go(v){view=v;selStar=null;render();window.scrollTo(0,0);}
+
+/* ---------- Question rendering ---------- */
+function shuffled(n){let a;do{a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}while(a.every((v,i)=>v===i));return a;}
+function qHTML(q,n){
+  const s=qs(q.id),done=!!s.correct,dis=done?"disabled":"";
+  let body="";
+  if(q.type==="mc"||q.type==="multi"){
+    const t=q.type==="mc"?"radio":"checkbox";
+    body=`<div class="opts" role="${q.type==="mc"?"radiogroup":"group"}" aria-label="Answer choices">`+q.options.map((o,i)=>{
+      const ck=q.type==="mc"?(s.val===i):(Array.isArray(s.val)&&s.val.includes(i));
+      return `<label class="opt"><input type="${t}" name="${q.id}" value="${i}" ${ck?"checked":""} ${dis}><span>${o}</span></label>`;}).join("")+`</div>`;
+  }else if(q.type==="sort"){
+    const v=s.val||[];
+    body=`<div class="q-body">`+q.items.map((it,i)=>`<div class="sortrow"><span class="nm">${it}</span><span class="seg" role="radiogroup" aria-label="${esc(it)}">`+
+      q.cats.map((c,j)=>`<label><input type="radio" name="${q.id}-${i}" value="${j}" ${v[i]===j?"checked":""} ${dis}>${c}</label>`).join("")+`</span></div>`).join("")+`</div><div style="height:10px"></div>`;
+  }else if(q.type==="order"){
+    if(!s.val){s.val=shuffled(q.items.length);}
+    body=`<div class="q-body"><ol class="order">`+s.val.map((ix,pos)=>`<li><span class="t">${q.items[ix]}</span>`+
+      `<button type="button" data-move="${q.id}|${pos}|-1" aria-label="Move ${esc(q.items[ix])} up" ${dis||pos===0?"disabled":""}>↑</button>`+
+      `<button type="button" data-move="${q.id}|${pos}|1" aria-label="Move ${esc(q.items[ix])} down" ${dis||pos===s.val.length-1?"disabled":""}>↓</button></li>`).join("")+`</ol></div>`;
+  }else if(q.type==="text"){
+    body=`<div class="q-body"><textarea name="${q.id}" aria-label="Your answer" placeholder="Type your answer here.">${esc(s.val||"")}</textarea></div><div style="height:10px"></div>`;
+  }
+  const btn=q.type==="text"?"Save answer":"Check answer";
+  const fb=feedbackFor(q,s);
+  return `<div class="q ${done?"done":""}" id="q-${q.id}"><p class="q-prompt"><span class="q-num">${n}</span><span>${q.prompt}</span></p>${body}
+   <div class="q-actions"><button class="btn" data-check="${q.id}" ${done?"disabled":""}>${done?"Correct":btn}</button><span class="tries">${s.tries&&q.type!=="text"?"Attempts: "+s.tries:""}</span></div>
+   <div class="fb ${fb.cls}" role="status">${fb.msg}</div></div>`;
+}
+function feedbackFor(q,s){
+  if(q.type==="text")return s.done?{cls:"good",msg:"Answer saved. You can edit it and save again any time."}:{cls:"",msg:""};
+  if(s.correct)return{cls:"good",msg:"<strong>Correct!</strong> "+q.explain};
+  if(s.last)return{cls:"bad",msg:s.last};
+  return{cls:"",msg:""};
+}
+function readVal(q){
+  const box=document.getElementById("q-"+q.id);
+  if(q.type==="mc"){const c=box.querySelector("input:checked");return c?+c.value:null;}
+  if(q.type==="multi")return[...box.querySelectorAll("input:checked")].map(i=>+i.value);
+  if(q.type==="sort")return q.items.map((_,i)=>{const c=box.querySelector(`input[name="${q.id}-${i}"]:checked`);return c?+c.value:null;});
+  if(q.type==="order")return qs(q.id).val;
+  if(q.type==="text")return box.querySelector("textarea").value;
+}
+function check(id){
+  const q=QS[id],s=qs(id),val=readVal(q);s.val=val;
+  if(q.type==="text"){
+    if(val.trim().length<q.min){s.done=false;s.last=null;setFb(q,"bad","Write a little more. A complete answer explains your thinking and gives an example.");save();return;}
+    s.done=true;save();refreshQ(q);return;
+  }
+  if(q.type==="mc"&&val===null){setFb(q,"bad","Choose an answer first.");return;}
+  if(q.type==="multi"&&val.length===0){setFb(q,"bad","Select your answers first.");return;}
+  if(q.type==="sort"&&val.includes(null)){setFb(q,"bad","Sort every star before you check.");return;}
+  s.tries++;
+  let ok=false,msg="";
+  if(q.type==="mc")ok=val===q.answer;
+  if(q.type==="multi"){ok=val.length===q.answer.length&&q.answer.every(a=>val.includes(a));if(!ok&&val.length!==q.answer.length)msg=`Choose exactly ${q.answer.length}. `;}
+  if(q.type==="order")ok=val.every((v,i)=>v===i);
+  if(q.type==="sort"){const n=val.filter((v,i)=>v===q.answer[i]).length;ok=n===q.items.length;if(!ok)msg=`${n} of ${q.items.length} are sorted correctly. `;}
+  s.correct=ok;s.last=ok?null:"<strong>Not yet.</strong> "+msg+q.hint;
+  save();refreshQ(q);
+  if(id==="s1axis")drawBuild();
+}
+function setFb(q,cls,msg){const f=document.querySelector(`#q-${q.id} .fb`);if(f){f.className="fb "+cls;f.innerHTML=msg;}}
+function refreshQ(q,focusSel){
+  const el=document.getElementById("q-"+q.id);if(!el)return;
+  const n=el.querySelector(".q-num").textContent;
+  el.outerHTML=qHTML(q,n);
+  const ne=document.getElementById("q-"+q.id);
+  const f=focusSel?ne.querySelector(focusSel):null;
+  if(f&&!f.disabled)f.focus();else{const b=ne.querySelector("[data-check]");if(b&&!b.disabled)b.focus();}
+}
+function listHTML(arr,start){return arr.map((q,i)=>qHTML(q,start+i)).join("");}
+
+/* ---------- SVG helpers ---------- */
+function svgPoint(svg,evt){const p=svg.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+
+/* ---------- Station 1 plot (color vs absolute magnitude) ---------- */
+const BP={L:70,R:580,T:20,B:400,cw:85,mh:15.2};
+const bx=c=>BP.L+BP.cw*c+BP.cw/2, by=m=>BP.T+(m+10)*BP.mh;
+function drawBuild(){
+  const svg=document.getElementById("buildPlot");if(!svg)return;
+  const s=qs("s1plot"),wrong=s.wrong||[];
+  let h=`<rect width="600" height="456" rx="12" fill="#141A44"/>`;
+  h+=`<rect x="${BP.L}" y="${BP.T}" width="${BP.R-BP.L}" height="${BP.B-BP.T}" fill="#1A2152"/>`;
+  for(let m=-10;m<=15;m++){const y=by(m);h+=`<line x1="${BP.L}" x2="${BP.R}" y1="${y}" y2="${y}" stroke="#fff" stroke-opacity="${m%5===0?.28:.08}"/>`;
+    if(m%5===0)h+=`<text x="${BP.L-8}" y="${y+4}" text-anchor="end" font-size="13">${fmtM(m)}</text>`;}
+  for(let c=0;c<=6;c++){const x=BP.L+BP.cw*c;h+=`<line x1="${x}" x2="${x}" y1="${BP.T}" y2="${BP.B}" stroke="#fff" stroke-opacity=".22"/>`;}
+  COLS.forEach((c,i)=>{h+=`<rect x="${BP.L+BP.cw*i+2}" y="${BP.B+3}" width="${BP.cw-4}" height="6" rx="3" fill="${COLHEX[i]}"/><text x="${bx(i)}" y="${BP.B+26}" text-anchor="middle" font-size="12.5">${c}</text>`;});
+  h+=`<text x="${BP.L}" y="${BP.B+48}" font-size="12.5" font-weight="700">← Hottest</text><text x="${(BP.L+BP.R)/2}" y="${BP.B+48}" text-anchor="middle" font-size="13" font-weight="700">Color</text><text x="${BP.R}" y="${BP.B+48}" text-anchor="end" font-size="12.5" font-weight="700">Coolest →</text>`;
+  h+=`<text transform="translate(20 ${(BP.T+BP.B)/2}) rotate(-90)" text-anchor="middle" font-size="13" font-weight="700">Absolute magnitude</text>`;
+  const ax=state.q.s1axis;
+  if(ax&&ax.correct){h+=`<text x="${BP.L+6}" y="${BP.T+14}" font-size="11" fill-opacity=".8">Most luminous</text><text x="${BP.L+6}" y="${BP.B-6}" font-size="11" fill-opacity=".8">Least luminous</text>`;}
+  if(state.wd){const x=bx(state.wd.c),y=by(state.wd.m),wc=state.q.s1wd;
+    h+=`<rect x="${x-34}" y="${y-28}" width="68" height="56" fill="#fff" fill-opacity=".08" stroke="${wc&&wc.last?"#FF928B":"#fff"}" stroke-width="2" stroke-dasharray="6 4"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="11">White dwarfs</text>`;}
+  const seen={};
+  STARS1.forEach(st=>{const p=state.plot[st.id];if(!p)return;const k=p.c+"|"+p.m;const off=(seen[k]=(seen[k]||0)+1)-1;
+    const x=bx(p.c)+off*14,y=by(p.m);
+    if(wrong.includes(st.id))h+=`<circle cx="${x}" cy="${y}" r="12" fill="none" stroke="#FF928B" stroke-width="2.5" stroke-dasharray="4 3"/>`;
+    h+=`<circle cx="${x}" cy="${y}" r="7" fill="${COLHEX[p.c]}" stroke="${selStar===st.id?"#fff":"#141A44"}" stroke-width="2"/><text x="${x}" y="${y-11}" text-anchor="middle" font-size="10.5">${st.name}</text>`;});
+  svg.innerHTML=h;
+}
+function chipsHTML(){
+  const s=qs("s1plot"),wrong=s.wrong||[],locked=s.correct;
+  return STARS1.map(st=>`<button class="chip ${state.plot[st.id]?"placed":""} ${wrong.includes(st.id)?"wrong":""}" data-star="${st.id}" aria-pressed="${selStar===st.id}" ${locked?"disabled":""}>${st.name}</button>`).join("")+
+   `<button class="chip wd ${state.wd?"placed":""}" data-star="wd" aria-pressed="${selStar==="wd"}" ${state.q.s1wd&&state.q.s1wd.correct?"disabled":""}>White-dwarf square</button>`;
+}
+function refreshChips(){const c=document.getElementById("chips");if(c)c.innerHTML=chipsHTML();const l=document.getElementById("selLabel");if(l)l.textContent=selStar?(selStar==="wd"?"White-dwarf square":STARS1.find(s=>s.id===selStar).name):"nothing yet";}
+function place(c,m){
+  if(!selStar){plotMsg("note","Pick a star (or the white-dwarf square) first, then tap the diagram.");return;}
+  c=Math.max(0,Math.min(5,c));m=Math.max(-10,Math.min(15,m));
+  if(selStar==="wd"){if(state.q.s1wd&&state.q.s1wd.correct)return;state.wd={c,m};if(state.q.s1wd)state.q.s1wd.last=null;}
+  else{if(qs("s1plot").correct)return;state.plot[selStar]={c,m};const s=qs("s1plot");if(s.wrong)s.wrong=s.wrong.filter(x=>x!==selStar);
+    const i=STARS1.findIndex(s=>s.id===selStar);const nxt=STARS1.slice(i+1).concat(STARS1.slice(0,i)).find(s=>!state.plot[s.id]);selStar=nxt?nxt.id:null;}
+  save();drawBuild();refreshChips();
+}
+function plotMsg(cls,msg){const f=document.getElementById("plotFb");if(f){f.className="fb "+cls;f.style.marginLeft="0";f.innerHTML=msg;}}
+function checkPlot(){
+  const missing=STARS1.filter(s=>!state.plot[s.id]);
+  if(missing.length){plotMsg("bad",`Place all 10 stars first. Still to place: ${missing.map(s=>s.name).join(", ")}.`);return;}
+  const s=qs("s1plot");s.tries++;
+  s.wrong=STARS1.filter(st=>{const p=state.plot[st.id];return!(p.c===st.col&&Math.abs(p.m-st.mag)<=1);}).map(st=>st.id);
+  s.correct=s.wrong.length===0;
+  save();drawBuild();refreshChips();
+  if(s.correct)plotMsg("good","<strong>All 10 stars are plotted correctly.</strong> Your dots and labels are your key. Now answer the questions using your diagram.");
+  else plotMsg("bad",`<strong>${10-s.wrong.length} of 10 are correct.</strong> Stars with a red dashed ring need another look. Check two things in the table: the color column and the magnitude number. Remember that −7 is near the top and +13 is near the bottom.`);
+}
+function checkWD(){
+  if(!state.wd){plotMsg("bad","Pick “White-dwarf square,” then tap where white dwarfs belong.");return;}
+  const s=qs("s1wd");s.tries++;const ok=state.wd.c<=3&&state.wd.m>=10;s.correct=ok;
+  s.last=ok?null:"miss";save();drawBuild();refreshChips();
+  plotMsg(ok?"good":"bad",ok?"<strong>Correct!</strong> White dwarfs are hot (white to blue-white) but very small, so they are dim. They sit in the lower left.":"<strong>Not yet.</strong> White dwarfs are very hot, so they glow white or blue-white, but they are tiny, so they are very dim (large magnitude numbers). Where does that put them?");
+}
+function plotStatusHTML(){
+  const p=state.q.s1plot,w=state.q.s1wd;
+  if(p&&p.correct&&w&&w.correct)return`<div class="fb good" id="plotFb" role="status" style="margin-left:0">Diagram complete: all stars and the white-dwarf square are in place.</div>`;
+  if(p&&p.correct)return`<div class="fb good" id="plotFb" role="status" style="margin-left:0">All 10 stars are plotted correctly. Next, place the white-dwarf square.</div>`;
+  return`<div class="fb" id="plotFb" role="status" style="margin-left:0"></div>`;
+}
+
+function renderS1(){
+  const main=document.getElementById("main");
+  const magOpts=[...Array(26).keys()].map(i=>i-10).map(m=>`<option value="${m}">${fmtM(m)}</option>`).join("");
+  main.innerHTML=`
+  <section class="intro"><h2>Station 1: Build your own H-R diagram</h2>
+  <p>An H-R diagram plots a star’s <strong>color</strong> and its <strong>absolute magnitude</strong>. Color tells us the surface temperature. Absolute magnitude tells us the star’s true brightness (luminosity): <strong>the larger the absolute magnitude, the smaller the luminosity.</strong> The most luminous stars have negative magnitudes.</p></section>
+  <div class="lab">
+    <div class="stick">
+      <div class="sky"><svg id="buildPlot" class="hr" viewBox="0 0 600 456" role="img" aria-label="Your H-R diagram: color on the x-axis, absolute magnitude on the y-axis"></svg></div>
+      ${plotStatusHTML()}
+      <div class="row no-print" style="margin-top:10px">
+        <button class="btn" id="checkPlot" ${state.q.s1plot&&state.q.s1plot.correct?"disabled":""}>Check my stars</button>
+        <button class="btn ghost" id="checkWD" ${state.q.s1wd&&state.q.s1wd.correct?"disabled":""}>Check white-dwarf square</button>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <h3 style="margin-top:0">Star data</h3>
+        <table class="data"><thead><tr><th>Star</th><th>Color</th><th style="text-align:right">Absolute magnitude</th></tr></thead><tbody>
+        ${STARS1.map(s=>`<tr><td>${s.name}</td><td><span class="swatch" style="background:${COLHEX[s.col]}"></span>${COLS[s.col]}</td><td class="num">${fmtM(s.mag)}</td></tr>`).join("")}
+        </tbody></table>
+        <h3>Plot the stars</h3>
+        <p>Pick a star, then tap the diagram where it belongs. Tap again to move it. Or use the menus below.</p>
+        <div class="chips" id="chips"></div>
+        <div class="placer"><span>Placing: <strong id="selLabel"></strong></span>
+          <label>Color column<select id="pc">${COLS.map((c,i)=>`<option value="${i}">${c}</option>`).join("")}</select></label>
+          <label>Magnitude<select id="pm">${magOpts}</select></label>
+          <button class="btn ghost" id="placeBtn">Place it</button></div>
+        <p style="font-size:.92rem;color:var(--muted);margin-top:.8rem">When all 10 stars are placed, use your reading guide to place the <strong>white-dwarf square</strong> where white dwarfs are found.</p>
+      </div>
+      <h3>Questions</h3>
+      <div id="s1qs">${listHTML(S1Q,1)}</div>
+      <div class="row" style="margin-top:20px"><button class="btn" data-go="s2">Go to Station 2</button></div>
+    </div>
+  </div>`;
+  drawBuild();refreshChips();
+  const svg=document.getElementById("buildPlot");
+  svg.addEventListener("click",e=>{const p=svgPoint(svg,e);if(p.x<BP.L||p.x>BP.R||p.y<BP.T-8||p.y>BP.B+8)return;
+    place(Math.floor((p.x-BP.L)/BP.cw),Math.round((p.y-BP.T)/BP.mh-10));});
+  document.getElementById("chips").addEventListener("click",e=>{const b=e.target.closest("[data-star]");if(!b)return;selStar=b.dataset.star;
+    if(selStar&&selStar!=="wd"&&state.plot[selStar]){document.getElementById("pc").value=state.plot[selStar].c;document.getElementById("pm").value=state.plot[selStar].m;}
+    refreshChips();drawBuild();});
+  document.getElementById("placeBtn").addEventListener("click",()=>place(+document.getElementById("pc").value,+document.getElementById("pm").value));
+  document.getElementById("checkPlot").addEventListener("click",()=>{checkPlot();document.getElementById("checkPlot").disabled=!!qs("s1plot").correct;});
+  document.getElementById("checkWD").addEventListener("click",()=>{checkWD();document.getElementById("checkWD").disabled=!!qs("s1wd").correct;});
+}
+
+/* ---------- Temperature H-R diagram (Stations 2 and 3) ---------- */
+const HR={L:70,R:590,T:34,B:414,lt:Math.log10(50000),lb:Math.log10(2500),mh:15.2};
+const tx=T=>HR.L+(HR.lt-Math.log10(T))/(HR.lt-HR.lb)*(HR.R-HR.L);
+const my=m=>HR.T+(m+10)*HR.mh;
+const invT=x=>Math.pow(10,HR.lt-(x-HR.L)/(HR.R-HR.L)*(HR.lt-HR.lb));
+const invM=y=>(y-HR.T)/HR.mh-10;
+function tempColor(T){return T>25000?"#7DA2FF":T>10000?"#A9C1FF":T>7500?"#EEF2FF":T>6000?"#FFF1B0":T>5200?"#FFE07A":T>3700?"#FFAE5C":"#FF6B4A";}
+function drawHR(svg,opt){
+  let h=`<rect width="670" height="470" rx="12" fill="#141A44"/>`;
+  const B=[50000,30000,10000,7500,6000,5200,3700,2500],L="OBAFGKM",C=["#7DA2FF","#A9C1FF","#EEF2FF","#FFF1B0","#FFE07A","#FFAE5C","#FF6B4A"];
+  for(let i=0;i<7;i++){const a=tx(B[i]),b=tx(B[i+1]);h+=`<rect x="${a}" y="12" width="${b-a}" height="17" fill="${C[i]}"/><text x="${(a+b)/2}" y="25" text-anchor="middle" font-size="12" font-weight="700" style="fill:#141A44">${L[i]}</text>`;}
+  h+=`<text x="${HR.L-8}" y="25" text-anchor="end" font-size="10.5" fill-opacity=".8">Class</text>`;
+  h+=`<rect x="${HR.L}" y="${HR.T}" width="${HR.R-HR.L}" height="${HR.B-HR.T}" fill="#1A2152"/>`;
+  [-10,-5,0,5,10,15].forEach(m=>{const y=my(m);h+=`<line x1="${HR.L}" x2="${HR.R}" y1="${y}" y2="${y}" stroke="#fff" stroke-opacity=".12"/><text x="${HR.L-8}" y="${y+4}" text-anchor="end" font-size="12.5">${fmtM(m)}</text>`;});
+  [[4,"10,000"],[2,"100"],[0,"1"],[-2,"0.01"],[-4,"0.0001"]].forEach(([k,lab])=>{const y=my(4.8-2.5*k);h+=`<line x1="${HR.R}" x2="${HR.R+5}" y1="${y}" y2="${y}" stroke="#fff" stroke-opacity=".5"/><text x="${HR.R+8}" y="${y+4}" font-size="11.5">${lab}</text>`;});
+  [50000,20000,10000,7500,5000,3000].forEach(T=>{const x=tx(T);h+=`<line x1="${x}" x2="${x}" y1="${HR.T}" y2="${HR.B}" stroke="#fff" stroke-opacity=".08"/><text x="${x}" y="${HR.B+18}" text-anchor="middle" font-size="12">${T.toLocaleString("en-US")}</text>`;});
+  h+=`<text x="${HR.L}" y="${HR.B+42}" font-size="12.5" font-weight="700">← Hotter</text><text x="${(HR.L+HR.R)/2}" y="${HR.B+42}" text-anchor="middle" font-size="13" font-weight="700">Surface temperature (°C)</text><text x="${HR.R}" y="${HR.B+42}" text-anchor="end" font-size="12.5" font-weight="700">Cooler →</text>`;
+  h+=`<text transform="translate(20 ${(HR.T+HR.B)/2}) rotate(-90)" text-anchor="middle" font-size="13" font-weight="700">Absolute magnitude (brighter ↑)</text>`;
+  h+=`<text transform="translate(658 ${(HR.T+HR.B)/2}) rotate(90)" text-anchor="middle" font-size="12.5" font-weight="700">Luminosity (Sun = 1)</text>`;
+  // regions
+  const ms=[[45000,-5.8],[30000,-4.6],[20000,-2.6],[12000,-0.4],[9000,1.2],[7000,2.7],[6000,4],[5300,5.1],[4600,6.6],[3800,9],[3200,11.5],[2700,14.5]];
+  h+=`<polyline points="${ms.map(([T,m])=>tx(T)+","+my(m)).join(" ")}" fill="none" stroke="#fff" stroke-opacity=".1" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>`;
+  h+=`<text x="${tx(9500)}" y="${my(6)}" text-anchor="middle" font-size="13" font-style="italic" fill-opacity=".85">Main sequence</text>`;
+  h+=`<ellipse cx="${tx(3900)}" cy="${my(0.1)}" rx="66" ry="30" fill="#fff" fill-opacity=".06" stroke="#fff" stroke-opacity=".35" stroke-dasharray="5 4"/><text x="${tx(3400)}" y="${my(3.6)}" text-anchor="middle" font-size="13" font-style="italic" fill-opacity=".85">Giants</text>`;
+  h+=`<rect x="${tx(13000)}" y="${my(-8.7)}" width="${tx(2600)-tx(13000)}" height="${my(-3)-my(-8.7)}" rx="26" fill="#fff" fill-opacity=".05" stroke="#fff" stroke-opacity=".35" stroke-dasharray="5 4"/><text x="${tx(4700)}" y="${my(-9.15)}" text-anchor="middle" font-size="13" font-style="italic" fill-opacity=".85">Supergiants</text>`;
+  h+=`<ellipse cx="318" cy="${my(12.8)}" rx="140" ry="33" fill="#fff" fill-opacity=".05" stroke="#fff" stroke-opacity=".35" stroke-dasharray="5 4"/><text x="200" y="${my(9.7)}" text-anchor="middle" font-size="13" font-style="italic" fill-opacity=".85">White dwarfs</text>`;
+  // stars
+  (opt.stars||[]).forEach(([n,T,m,lp])=>{const x=tx(T),y=my(m);
+    const P={r:[9,4,"start"],l:[-9,4,"end"],a:[0,-9,"middle"],b:[0,16,"middle"],al:[-6,-8,"end"],bl:[-6,15,"end"]}[lp||"r"];
+    h+=`<g class="star" data-star="${esc(n)}" data-t="${T}" data-m="${m}" style="cursor:pointer"><circle cx="${x}" cy="${y}" r="12" fill="transparent"/><circle cx="${x}" cy="${y}" r="5" fill="${tempColor(T)}" stroke="#141A44" stroke-width="1.2"/>`+
+      (opt.names?`<text x="${x+P[0]}" y="${y+P[1]}" text-anchor="${P[2]}" font-size="10.5">${n}</text>`:"")+`</g>`;});
+  // track
+  if(opt.track&&opt.track.length){const pts=opt.track.map(([T,m])=>tx(T)+","+my(m)).join(" ");
+    h+=`<polyline points="${pts}" fill="none" stroke="#FFE07A" stroke-width="2.5" stroke-dasharray="7 5"/>`;
+    opt.track.slice(0,-1).forEach(([T,m])=>{h+=`<circle cx="${tx(T)}" cy="${my(m)}" r="4" fill="#FFE07A" fill-opacity=".6"/>`;});}
+  if(opt.current){const [T,m]=opt.current,x=tx(T),y=my(m);
+    if(opt.burst){const pts=[...Array(16).keys()].map(i=>{const r=i%2?14:34,a=i*Math.PI/8;return(x+r*Math.cos(a))+","+(y+r*Math.sin(a));}).join(" ");
+      h+=`<polygon class="burst" points="${pts}" fill="#FFF6D8" stroke="#FFAE5C" stroke-width="2"/>`;}
+    h+=`<circle cx="${x}" cy="${y}" r="10" fill="${tempColor(T)}" stroke="#fff" stroke-width="3"/>`;}
+  if(opt.offchart)h+=`<rect x="${HR.L+90}" y="${my(-1.5)}" width="${HR.R-HR.L-180}" height="56" rx="10" fill="#141A44" stroke="#fff" stroke-opacity=".4"/><text x="${(HR.L+HR.R)/2}" y="${my(-1.5)+24}" text-anchor="middle" font-size="13" font-weight="700">Not plotted on the H-R diagram</text><text x="${(HR.L+HR.R)/2}" y="${my(-1.5)+43}" text-anchor="middle" font-size="12">${opt.offchart}</text>`;
+  (opt.markers||[]).forEach(mk=>{const x=tx(mk.T),y=my(mk.m);h+=`<circle cx="${x}" cy="${y}" r="11" fill="${tempColor(mk.T)}" stroke="#fff" stroke-width="2"/><text x="${x}" y="${y+4.5}" text-anchor="middle" font-size="12" font-weight="700" style="fill:#141A44">${mk.k}</text>`;});
+  h+=`<g id="ch-${svg.id}" style="display:none" pointer-events="none"><line class="v" y1="${HR.T}" y2="${HR.B}" stroke="#fff" stroke-opacity=".55" stroke-dasharray="3 3"/><line class="h" x1="${HR.L}" x2="${HR.R}" stroke="#fff" stroke-opacity=".55" stroke-dasharray="3 3"/></g>`;
+  svg.innerHTML=h;
+}
+function attachReader(svg,readout,idle){
+  const ch=()=>svg.querySelector("#ch-"+svg.id);
+  const show=(x,y)=>{const g=ch();g.style.display="";g.querySelector(".v").setAttribute("x1",x);g.querySelector(".v").setAttribute("x2",x);g.querySelector(".h").setAttribute("y1",y);g.querySelector(".h").setAttribute("y2",y);};
+  svg.addEventListener("pointermove",e=>{if(svg.dataset.pinned)return;const p=svgPoint(svg,e);
+    if(p.x<HR.L||p.x>HR.R||p.y<HR.T||p.y>HR.B){ch().style.display="none";readout.textContent=idle;return;}
+    show(p.x,p.y);readout.textContent=`Pointer: about ${fmtT(invT(p.x))}°C, absolute magnitude about ${fmtM(Math.round(invM(p.y)))}`;});
+  svg.addEventListener("pointerleave",()=>{if(svg.dataset.pinned)return;ch().style.display="none";readout.textContent=idle;});
+  svg.addEventListener("click",e=>{const g=e.target.closest(".star");
+    if(!g){delete svg.dataset.pinned;return;}
+    const T=+g.dataset.t,m=+g.dataset.m;svg.dataset.pinned="1";show(tx(T),my(m));
+    readout.innerHTML=`<strong>${g.dataset.star}</strong>: about ${fmtT(T)}°C, absolute magnitude about ${fmtM(m)}. Tap empty space to keep exploring.`;});
+}
+
+function renderS2(){
+  const idle="Move your pointer over the diagram to read temperature and magnitude. Tap a star to see its name and values.";
+  document.getElementById("main").innerHTML=`
+  <section class="intro"><h2>Station 2: Read the H-R diagram</h2>
+  <p>Use this H-R diagram to compare and classify real stars. Stars further <strong>left</strong> are hotter, stars further <strong>right</strong> are cooler. Stars <strong>higher up</strong> are more luminous, stars <strong>lower down</strong> are dimmer. The pointer lines help you read values off the axes.</p></section>
+  <div class="lab">
+    <div class="stick">
+      <div class="sky"><svg id="hr2" class="hr" viewBox="0 0 670 470" role="img" aria-label="H-R diagram of 24 named stars: surface temperature in degrees Celsius on the x-axis, absolute magnitude on the left y-axis, luminosity on the right y-axis, with main sequence, giant, supergiant, and white dwarf regions"></svg></div>
+      <p class="readout" id="ro2" aria-live="polite">${idle}</p>
+      <label class="row no-print" style="font-size:.95rem"><input type="checkbox" id="names" checked> Show star names</label>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Part A: Read the diagram</h3>
+      ${listHTML(S2A,1)}
+      <h3>Part B: H-R diagram vocabulary</h3>
+      ${listHTML(S2B,11)}
+      <div class="row" style="margin-top:20px"><button class="btn" data-go="s3">Go to Station 3</button></div>
+    </div>
+  </div>`;
+  const svg=document.getElementById("hr2"),ro=document.getElementById("ro2");
+  const draw=()=>drawHR(svg,{stars:STARS2,names:document.getElementById("names").checked});
+  draw();attachReader(svg,ro,idle);
+  document.getElementById("names").addEventListener("change",()=>{delete svg.dataset.pinned;draw();ro.textContent=idle;});
+}
+
+/* ---------- Station 3 ---------- */
+function drawLC(){
+  const lc=state.lc,P=PATHS[lc.path],st=P.stages[lc.stage];
+  const track=P.stages.slice(0,lc.stage+1).filter(s=>s.pos).map(s=>s.pos).filter((p,i,a)=>!(i&&p[0]===a[i-1][0]&&p[1]===a[i-1][1]));
+  let off=null;
+  if(!st.pos)off=lc.stage===0?"A nebula is a cloud of gas and dust, not a star yet.":"The leftover core is too small and dim to plot.";
+  drawHR(document.getElementById("lcPlot"),{track:st.pos?track:track,current:st.pos,burst:st.burst,offchart:off});
+  document.getElementById("lcTabs").innerHTML=P.stages.map((s,i)=>`<button data-stage="${i}" aria-current="${i===lc.stage}">${i+1}. ${s.name}</button>`).join("");
+  document.getElementById("lcCard").innerHTML=`<h3 style="margin:0">${lc.stage+1}. ${st.name}</h3><p class="time">Time at this stage: ${st.time}</p><p>${st.text}</p>`;
+  document.querySelectorAll("#lcToggle button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.path===lc.path));
+  document.getElementById("lcPrev").disabled=lc.stage===0;
+  document.getElementById("lcNext").disabled=lc.stage===P.stages.length-1;
+}
+function renderS3(){
+  document.getElementById("main").innerHTML=`
+  <section class="intro"><h2>Station 3: The life cycle of stars</h2>
+  <p>Every star is born in a nebula, but how it lives and dies depends on its <strong>mass</strong>. Step through each life cycle and watch the star move across the H-R diagram.</p></section>
+  <div class="lab">
+    <div class="stick">
+      <div class="row no-print"><div class="path-toggle" id="lcToggle" role="group" aria-label="Choose a star"><button data-path="sun">Sun-like star</button><button data-path="massive">Massive star</button></div></div>
+      <div class="stage-tabs no-print" id="lcTabs"></div>
+      <div class="sky"><svg id="lcPlot" class="hr" viewBox="0 0 670 470" role="img" aria-label="H-R diagram showing the path of the selected star through its life cycle" style="max-height:46vh"></svg></div>
+      <div class="stage-card" id="lcCard" aria-live="polite"></div>
+      <div class="row no-print"><button class="btn ghost" id="lcPrev">Back</button><button class="btn" id="lcNext">Next stage</button></div>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Life cycle questions</h3>
+      ${listHTML(S3Q,1)}
+      <h3>Apply it: classify mystery stars</h3>
+      <p>Four mystery stars are plotted below. Use their position to classify each one.</p>
+      <div class="sky"><svg id="mysPlot" class="hr" viewBox="0 0 670 470" role="img" aria-label="H-R diagram with four mystery stars labeled X, Y, Z, and W"></svg></div>
+      <table class="data" style="margin-top:10px"><thead><tr><th>Star</th><th style="text-align:right">Surface temperature</th><th style="text-align:right">Absolute magnitude</th></tr></thead><tbody>
+      ${MYSTERY.map(s=>`<tr><td>Star ${s.k}</td><td class="num">${s.T.toLocaleString("en-US")}°C</td><td class="num">${fmtM(s.m)}</td></tr>`).join("")}</tbody></table>
+      ${listHTML(S3M,7)}
+      <div class="row" style="margin-top:20px"><button class="btn" data-go="results">See my results</button></div>
+    </div>
+  </div>`;
+  drawLC();
+  drawHR(document.getElementById("mysPlot"),{markers:MYSTERY});
+  document.getElementById("lcToggle").addEventListener("click",e=>{const b=e.target.closest("[data-path]");if(!b)return;state.lc={path:b.dataset.path,stage:0};save();drawLC();});
+  document.getElementById("lcTabs").addEventListener("click",e=>{const b=e.target.closest("[data-stage]");if(!b)return;state.lc.stage=+b.dataset.stage;save();drawLC();document.querySelector(`#lcTabs [data-stage="${state.lc.stage}"]`).focus();});
+  document.getElementById("lcPrev").addEventListener("click",()=>{state.lc.stage--;save();drawLC();});
+  document.getElementById("lcNext").addEventListener("click",()=>{state.lc.stage++;save();drawLC();});
+}
+
+/* ---------- Start + Results ---------- */
+function renderStart(){
+  const lastK=fetchKey(LS+"last"),last=lastK?loadKey(lastK):null;
+  document.getElementById("main").innerHTML=`
+  <section class="start">
+    ${cleared?`<div class="fb good" role="status" style="margin:0 0 14px">Work cleared. This Chromebook is ready for the next student.</div>`:""}
+    <h2>Welcome, astronomer</h2>
+    <p>In this lab you will build an H-R diagram, use one to compare and classify real stars, and follow stars through their life cycles.</p>
+    <ul class="goals">
+      <li>I can plot stars on an H-R diagram using their color and absolute magnitude.</li>
+      <li>I can compare and classify stars as main sequence, giants, supergiants, or white dwarfs.</li>
+      <li>I can describe the life cycle of a Sun-like star and a massive star.</li>
+    </ul>
+    ${last?`<div class="panel"><p style="margin-top:0">Welcome back, <strong>${esc(last.name)}</strong> (period ${esc(last.period)}).</p><div class="row"><button class="btn" id="resume">Continue my lab</button></div></div>`:""}
+    <div class="panel">
+      <p style="margin-top:0"><strong>${last?"Not you? Start with your name.":"Start with your name."}</strong> Use the same name and period each time so your work comes back.</p>
+      <div class="field"><label for="nm">First and last name</label><input type="text" id="nm" autocomplete="name" maxlength="60"></div>
+      <div class="field"><label for="pd">Class period</label><select id="pd">${[1,2,3,4,5,6,7,8].map(p=>`<option>${p}</option>`).join("")}</select></div>
+      <div class="row"><button class="btn" id="begin">Start the lab</button><span id="startMsg" role="status" style="color:var(--bad)"></span></div>
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:0">Your work saves automatically in this browser while you are signed in to your school account. Finish on the same Chromebook if you can.</p>
+    </div>
+  </section>`;
+  if(last)document.getElementById("resume").addEventListener("click",()=>{cleared=false;state=last;state.lc=state.lc||{path:"sun",stage:0};go("s1");});
+  document.getElementById("begin").addEventListener("click",()=>{
+    cleared=false;const n=document.getElementById("nm").value.trim(),p=document.getElementById("pd").value;
+    if(n.length<2){document.getElementById("startMsg").textContent="Type your name to start.";document.getElementById("nm").focus();return;}
+    state=loadKey(key(n,p))||blank(n,p);save();go("s1");});
+}
+function renderResults(){
+  const rows=["s1","s2","s3"].map(st=>{const p=stationProgress(st);return`<div class="score" style="--c:${STATIONS[st].c}"><div>${STATIONS[st].label}</div><div class="big">${p.correct} / ${p.graded}</div><div style="font-size:.9rem;color:var(--muted)">correct, ${p.first} on the first try${STATIONS[st].text.length?`; written answer ${state.q[STATIONS[st].text[0]]&&state.q[STATIONS[st].text[0]].done?"saved":"missing"}`:""}</div><button class="btn ghost no-print" data-go="${st}" style="margin-top:8px">Open station</button></div>`;}).join("");
+  const tot=["s1","s2","s3"].reduce((a,st)=>{const p=stationProgress(st);a.c+=p.correct;a.g+=p.graded;a.f+=p.first;return a;},{c:0,g:0,f:0});
+  const w=id=>{const s=state.q[id];return s&&s.val&&s.val.trim()?esc(s.val):"<em>No answer yet.</em>";};
+  document.getElementById("main").innerHTML=`
+  <section>
+    <h2>Lab results</h2>
+    <p><strong>${esc(state.name)}</strong>, period ${esc(state.period)}. Printed ${new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}.</p>
+    <p>Total: <strong>${tot.c} of ${tot.g}</strong> checked items correct, ${tot.f} on the first try.</p>
+    <div class="score-grid">${rows}</div>
+    <h3>Written answers</h3>
+    <p><strong>Color and temperature:</strong> ${QS.s1text.prompt}</p><div class="written">${w("s1text")}</div>
+    <p><strong>Sun vs. Betelgeuse:</strong> ${QS.s3cer.prompt}</p><div class="written">${w("s3cer")}</div>
+    <div class="panel no-print" id="finish" style="margin-top:20px">
+      <h3 style="margin-top:0">Finish the lab</h3>
+      <p>Step 1: Download your results as a PDF and turn it in the way Ms. Sikes asks.<br>Step 2: Clear your work so the Chromebook is ready for the next class.</p>
+      <div class="row"><button class="btn" id="pdfBtn">Download my PDF</button><button class="btn ghost" id="clearBtn">Clear my work for the next class</button></div>
+      <div class="fb" id="finishFb" role="status" style="margin-left:0"></div>
+    </div>
+  </section>`;
+  document.getElementById("pdfBtn").addEventListener("click",downloadPDF);
+  document.getElementById("clearBtn").addEventListener("click",askClear);
+}
+function finishMsg(cls,html){const f=document.getElementById("finishFb");f.className="fb "+cls;f.innerHTML=html;}
+function askClear(){
+  const warn=state.pdfSaved?"":"<strong>You have not downloaded your PDF yet.</strong> ";
+  finishMsg(state.pdfSaved?"note":"bad",warn+`Clearing erases all of your answers on this Chromebook. This cannot be undone. <div class="row" style="margin-top:8px"><button class="btn" id="yesClear">Yes, clear my work</button><button class="btn ghost" id="noClear">Cancel</button></div>`);
+  document.getElementById("yesClear").addEventListener("click",clearWork);
+  document.getElementById("noClear").addEventListener("click",()=>finishMsg("",""));
+  document.getElementById("yesClear").focus();
+}
+function clearWork(){
+  try{localStorage.removeItem(key(state.name,state.period));localStorage.removeItem(LS+"last");}catch(e){}
+  state=null;cleared=true;go("start");
+}
+let cleared=false;
+/* ---------- PDF ---------- */
+const clean=t=>String(t).replace(/[−–—]/g,"-").replace(/→/g,"->").replace(/[↑↓←]/g,"").replace(/[’‘]/g,"'").replace(/[“”]/g,'"').replace(/…/g,"...").replace(/[^\x00-\xFF]/g,"");
+function answerText(q,s){
+  if(!s||s.val==null||(Array.isArray(s.val)&&!s.val.length))return"(no answer)";
+  const v=s.val;
+  if(q.type==="mc")return q.options[v];
+  if(q.type==="multi")return v.map(i=>q.options[i]).join("; ");
+  if(q.type==="sort")return q.items.map((it,i)=>it+": "+(v[i]==null?"?":q.cats[v[i]])).join("; ");
+  if(q.type==="order")return v.map(i=>q.items[i]).join(", ");
+  return v;
+}
+function statusText(s){if(!s||!s.tries)return"Not checked";return s.correct?`Correct (${s.tries===1?"first try":s.tries+" tries"})`:`Not correct yet (${s.tries} ${s.tries===1?"try":"tries"})`;}
+function buildPDF(){
+  const doc=new window.jspdf.jsPDF({unit:"pt",format:"letter"});
+  const M=54,W=612-2*M;let y=M;
+  const line=(t,size=10.5,bold=false,gap=4,indent=0)=>{doc.setFont("helvetica",bold?"bold":"normal");doc.setFontSize(size);
+    doc.splitTextToSize(clean(t),W-indent).forEach(l=>{if(y>792-M){doc.addPage();y=M;}doc.text(l,M+indent,y);y+=size*1.3;});y+=gap;};
+  line("H-R Diagram Star Lab Results",18,true,2);
+  line("Ms. Sikes' 8th Grade Science - TEKS 8.9A",10.5,false,8);
+  line(`Name: ${state.name}     Period: ${state.period}     Date: ${new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}`,11,true,6);
+  let tc=0,tg=0,tf=0;["s1","s2","s3"].forEach(st=>{const p=stationProgress(st);tc+=p.correct;tg+=p.graded;tf+=p.first;});
+  line(`Total: ${tc} of ${tg} checked items correct (${tf} on the first try)`,11,true,10);
+  const sec=(st,blocks)=>{const p=stationProgress(st);y+=4;line(`${STATIONS[st].label}: ${p.correct} of ${p.graded} correct, ${p.first} on the first try`,13,true,6);
+    blocks.forEach(([n,q])=>{const s=state.q[q.id];line(`${n}. ${q.prompt}`,10.5,true,1);
+      if(q.type==="text")line("Answer: "+(s&&s.val&&s.val.trim()?s.val:"(no answer)"),10.5,false,6,14);
+      else{line("Answer: "+answerText(q,s),10.5,false,1,14);line(statusText(s),9.5,false,6,14);}});};
+  const p=state.q.s1plot,w=state.q.s1wd;
+  y+=4;let pr=stationProgress("s1");line(`${STATIONS.s1.label}: ${pr.correct} of ${pr.graded} correct, ${pr.first} on the first try`,13,true,6);
+  line("Plot all 10 stars on the H-R diagram.",10.5,true,1);
+  if(p&&p.tries)line(p.correct?"All 10 stars plotted correctly":`${10-(p.wrong||[]).length} of 10 stars correct`,10.5,false,1,14);line(statusText(p),9.5,false,6,14);
+  line("Place the white-dwarf square.",10.5,true,1);line(statusText(w),9.5,false,6,14);
+  S1Q.forEach((q,i)=>{const s=state.q[q.id];line(`${i+1}. ${q.prompt}`,10.5,true,1);
+    if(q.type==="text")line("Answer: "+(s&&s.val&&s.val.trim()?s.val:"(no answer)"),10.5,false,6,14);
+    else{line("Answer: "+answerText(q,s),10.5,false,1,14);line(statusText(s),9.5,false,6,14);}});
+  sec("s2",S2A.concat(S2B).map((q,i)=>[i+1,q]));
+  sec("s3",S3Q.concat(S3M).map((q,i)=>[i+1,q]));
+  return doc;
+}
+async function downloadPDF(){
+  if(!window.jspdf){finishMsg("bad",`The PDF tool did not load. Check your internet connection, or <button class="btn ghost" id="printAlt">print this page</button> and choose “Save as PDF.”`);document.getElementById("printAlt").addEventListener("click",()=>window.print());return;}
+  const fname=("HR-Star-Lab-"+state.name.normalize("NFD").replace(/[\u0300-\u036f]/g,"")+"-P"+state.period).replace(/[^A-Za-z0-9-]+/g,"-")+".pdf";
+  const blob=buildPDF().output("blob");
+  let ok=false;
+  const dl=window.claude&&window.claude.use?await window.claude.use("downloads").catch(()=>null):null;
+  if(dl){try{await dl.save({filename:fname,data:blob});ok=true;}catch(e){if(e&&e.code==="declined"){finishMsg("note","Download canceled. Select “Download my PDF” to try again.");return;}}}
+  if(!ok){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);ok=true;}
+  state.pdfSaved=true;save();
+  finishMsg("good",`<strong>Your PDF is downloading</strong> as ${esc(fname)}. Check your Downloads folder, turn it in, then clear your work for the next class.`);
+}
+
+/* ---------- Router + delegation ---------- */
+function render(){
+  if(!state&&view!=="start")view="start";
+  ({start:renderStart,s1:renderS1,s2:renderS2,s3:renderS3,results:renderResults})[view]();
+  updateNav();
+}
+document.addEventListener("click",e=>{
+  const g=e.target.closest("[data-go]");if(g&&!g.disabled){go(g.dataset.go);return;}
+  const c=e.target.closest("[data-check]");if(c){check(c.dataset.check);return;}
+  const mv=e.target.closest("[data-move]");
+  if(mv){const[id,pos,d]=mv.dataset.move.split("|");const s=qs(id),i=+pos,j=i+(+d);if(j<0||j>=s.val.length)return;
+    [s.val[i],s.val[j]]=[s.val[j],s.val[i]];s.last=null;save();refreshQ(QS[id],`[data-move="${id}|${j}|${d}"]`);}
+});
+document.addEventListener("change",e=>{
+  const box=e.target.closest(".q");if(!box||!state)return;const id=box.id.slice(2),q=QS[id];if(!q||q.type==="text")return;
+  qs(id).val=readVal(q);save();
+});
+document.addEventListener("input",e=>{
+  if(e.target.tagName!=="TEXTAREA"||!state)return;const box=e.target.closest(".q");if(!box)return;const s=qs(box.id.slice(2));s.val=e.target.value;
+  clearTimeout(document.t);document.t=setTimeout(save,600);
+});
+render();
+</script>
+</body>
+</html>
