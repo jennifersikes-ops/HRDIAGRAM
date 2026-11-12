@@ -335,17 +335,21 @@ function stationProgress(st){
   S.text.forEach(id=>{const s=state.q[id];if(s&&s.done)txt++;});
   return{done:correct+txt,total:S.graded.length+S.text.length,correct,first,graded:S.graded.length};
 }
+const LOCKED=["s2","s3","results"];
+const plotDone=()=>!!(state&&state.q.s1plot&&state.q.s1plot.correct);
 function updateNav(){
   document.querySelectorAll("#nav button").forEach(b=>{
     const g=b.dataset.go;
     if(g===view)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");
-    b.disabled=!state&&g!=="start";
+    b.disabled=(!state&&g!=="start")||(LOCKED.includes(g)&&!plotDone());
   });
-  document.querySelectorAll("[data-prog]").forEach(p=>{const pr=stationProgress(p.dataset.prog);p.textContent=state?pr.done+" of "+pr.total+" done":"";});
+  document.querySelectorAll("main [data-go]").forEach(b=>{if(LOCKED.includes(b.dataset.go))b.disabled=!plotDone();});
+  const lm=document.getElementById("lockMsg");if(lm)lm.textContent=plotDone()?"":"Locked: plot all 10 stars correctly to unlock Station 2.";
+  document.querySelectorAll("[data-prog]").forEach(p=>{const pr=stationProgress(p.dataset.prog);p.textContent=!state?"":(p.dataset.prog!=="s1"&&!plotDone())?"Locked":pr.done+" of "+pr.total+" done";});
   const who=document.getElementById("who");
   who.innerHTML=state?`Scientist: <strong>${esc(state.name)}</strong>, period ${esc(state.period)}<span class="saved" id="saved">Saved</span>`:"";
 }
-function go(v){view=v;selStar=null;render();window.scrollTo(0,0);}
+function go(v){if(LOCKED.includes(v)&&!plotDone())v="s1";view=v;selStar=null;render();window.scrollTo(0,0);}
 
 /* ---------- Question rendering ---------- */
 function shuffled(n){let a;do{a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}while(a.every((v,i)=>v===i));return a;}
@@ -469,7 +473,7 @@ function checkPlot(){
   s.wrong=STARS1.filter(st=>{const p=state.plot[st.id];return!(p.c===st.col&&Math.abs(p.m-st.mag)<=1);}).map(st=>st.id);
   s.correct=s.wrong.length===0;
   save();drawBuild();refreshChips();
-  if(s.correct)plotMsg("good","<strong>All 10 stars are plotted correctly.</strong> Your dots and labels are your key. Now answer the questions using your diagram.");
+  if(s.correct)plotMsg("good","<strong>All 10 stars are plotted correctly.</strong> Your dots and labels are your key. Station 2 is now unlocked. Answer the questions below using your diagram.");
   else plotMsg("bad",`<strong>${10-s.wrong.length} of 10 are correct.</strong> Stars with a red dashed ring need another look. Check two things in the table: the color column and the magnitude number. Remember that −7 is near the top and +13 is near the bottom.`);
 }
 function checkWD(){
@@ -507,17 +511,14 @@ function renderS1(){
         ${STARS1.map(s=>`<tr><td>${s.name}</td><td><span class="swatch" style="background:${COLHEX[s.col]}"></span>${COLS[s.col]}</td><td class="num">${fmtM(s.mag)}</td></tr>`).join("")}
         </tbody></table>
         <h3>Plot the stars</h3>
-        <p>Pick a star, then tap the diagram where it belongs. Tap again to move it. Or use the menus below.</p>
+        <p>Pick a star, then tap the diagram where it belongs. To move a star, pick it again and tap a new spot. <strong>All 10 stars must be plotted correctly before you can go on to Station 2.</strong></p>
         <div class="chips" id="chips"></div>
-        <div class="placer"><span>Placing: <strong id="selLabel"></strong></span>
-          <label>Color column<select id="pc">${COLS.map((c,i)=>`<option value="${i}">${c}</option>`).join("")}</select></label>
-          <label>Magnitude<select id="pm">${magOpts}</select></label>
-          <button class="btn ghost" id="placeBtn">Place it</button></div>
+        <p class="placer"><span>Placing: <strong id="selLabel"></strong></span></p>
         <p style="font-size:.92rem;color:var(--muted);margin-top:.8rem">When all 10 stars are placed, use your reading guide to place the <strong>white-dwarf square</strong> where white dwarfs are found.</p>
       </div>
       <h3>Questions</h3>
       <div id="s1qs">${listHTML(S1Q,1)}</div>
-      <div class="row" style="margin-top:20px"><button class="btn" data-go="s2">Go to Station 2</button></div>
+      <div class="row" style="margin-top:20px"><button class="btn" data-go="s2">Go to Station 2</button><span class="tries" id="lockMsg"></span></div>
     </div>
   </div>`;
   drawBuild();refreshChips();
@@ -525,9 +526,7 @@ function renderS1(){
   svg.addEventListener("click",e=>{const p=svgPoint(svg,e);if(p.x<BP.L||p.x>BP.R||p.y<BP.T-8||p.y>BP.B+8)return;
     place(Math.floor((p.x-BP.L)/BP.cw),Math.round((p.y-BP.T)/BP.mh-10));});
   document.getElementById("chips").addEventListener("click",e=>{const b=e.target.closest("[data-star]");if(!b)return;selStar=b.dataset.star;
-    if(selStar&&selStar!=="wd"&&state.plot[selStar]){document.getElementById("pc").value=state.plot[selStar].c;document.getElementById("pm").value=state.plot[selStar].m;}
     refreshChips();drawBuild();});
-  document.getElementById("placeBtn").addEventListener("click",()=>place(+document.getElementById("pc").value,+document.getElementById("pm").value));
   document.getElementById("checkPlot").addEventListener("click",()=>{checkPlot();document.getElementById("checkPlot").disabled=!!qs("s1plot").correct;});
   document.getElementById("checkWD").addEventListener("click",()=>{checkWD();document.getElementById("checkWD").disabled=!!qs("s1wd").correct;});
 }
